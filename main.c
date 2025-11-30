@@ -1,9 +1,5 @@
 /*
  * dht11_projet.c
- * DJIGUIMDE Oumaro Titans
- * OLOKE Léandre
- * BARA Tiaw
- * Diandi papy jules
  */
 
 #include <avr/io.h>
@@ -16,7 +12,7 @@
 
 #include "lcd_4bits.h"
 
-// === Définition des broches pour LEDs ===
+// === DÃ©finition des broches pour LEDs ===
 
 #define led_rouge PC1
 #define led_jaune PH4
@@ -30,19 +26,19 @@
 
 #define BTN_UP PD0 // Augmenter les seuils
 #define BTN_DOWN PD2 // Diminuer les seuils
-#define BTN_TEMP_HUM PB3 // Car il n'y a pas d'interruption sur le port PH3 : // Changer entre température et humidité
-#define BTN_OK PE4 // Valider / quitter le mode réglage
+#define BTN_TEMP_HUM PB3 // Car il n'y a pas d'interruption sur le port PH3 : // Changer entre tempÃ©rature et humiditÃ©
+#define BTN_OK PE4 // Valider / quitter le mode rÃ©glage
 
 // Variables globales
 
-// === Variables globales pour état des boutons (modifiées dans les interruptions) ===
+// === Variables globales pour Ã©tat des boutons (modifiÃ©es dans les interruptions) ===
 
 volatile uint8_t btn_up = 0;
 volatile uint8_t btn_down = 0;
 volatile uint8_t btn_temp_hum = 0;
 volatile uint8_t btn_ok = 0;
 
-// === États de fonctionnement ===
+// === Ã‰tats de fonctionnement ===
 
 uint8_t mode_reglage = 0;
 uint8_t type_selection = 0;
@@ -53,7 +49,7 @@ uint8_t seuil_selection = 0;
 uint8_t temp_actuelle = 25;
 uint8_t hum_actuelle = 60;
 
-// === Seuils par défaut ===
+// === Seuils par dÃ©faut ===
 
 uint8_t temp_sup = 30;
 uint8_t temp_inf = 20;
@@ -80,12 +76,12 @@ void init_ports(void)
     DDRH |= (1 << led_jaune);
     DDRK |= (1 << led_verte);
 	
-	// Éteindre les LEDs au départ
+	// Ã‰teindre les LEDs au dÃ©part
     PORTC &= ~(1 << led_rouge);
     PORTH &= ~(1 << led_jaune);
     PORTK &= ~(1 << led_verte);
 	
-	// Boutons en entrée avec pull-up
+	// Boutons en entrÃ©e avec pull-up
     DDRD &= ~((1 << BTN_UP) | (1 << BTN_DOWN));
     DDRE &= ~(1 << BTN_OK);
     DDRH &= ~(1 << BTN_TEMP_HUM);
@@ -116,7 +112,7 @@ uint8_t lire_dht11(uint8_t *temp, uint8_t *hum)
     uint8_t dht_data[5] = {0};
     uint8_t i, j;
 
-	// Envoi du signal de démarrage(start_dht11)
+	// Envoi du signal de dÃ©marrage(start_dht11)
     DDRD |= (1 << DHT11_PIN);
     PORTD &= ~(1 << DHT11_PIN);
     _delay_ms(20);
@@ -124,7 +120,7 @@ uint8_t lire_dht11(uint8_t *temp, uint8_t *hum)
     _delay_us(20);
     DDRD &= ~(1 << DHT11_PIN);
 
-	// Attente de la réponse(reponse_dht11)
+	// Attente de la rÃ©ponse(reponse_dht11)
     while(PIND & (1 << DHT11_PIN));
     while(!(PIND & (1 << DHT11_PIN)));
     while(PIND & (1 << DHT11_PIN));
@@ -144,7 +140,7 @@ uint8_t lire_dht11(uint8_t *temp, uint8_t *hum)
         dht_data[i] = tampon;
     }
 
-	 // Vérification du checksum
+	 // VÃ©rification du checksum
     if ((uint8_t)(dht_data[0] + dht_data[1] + dht_data[2] + dht_data[3]) == dht_data[4]) {
         *hum = dht_data[0];
         *temp = dht_data[2];
@@ -157,7 +153,7 @@ uint8_t lire_dht11(uint8_t *temp, uint8_t *hum)
 // === Affichage des mesures sur LCD ===
 void mesure_temp_hum(void)
 {
-    PORTK |= (1 << led_verte);// LED verte allumée (fonctionnement normal)
+    PORTK |= (1 << led_verte);// LED verte allumÃ©e (fonctionnement normal)
 	
     if (lire_dht11(&temp_actuelle, &hum_actuelle)) {
         cls_LCD();
@@ -170,14 +166,14 @@ void mesure_temp_hum(void)
     }
 }
 
-// === Mode réglage des seuils ===
+// === Mode rÃ©glage des seuils ===
 void reglage_alarme(void)
 {
-    PORTK &= ~(1 << led_verte);// Éteindre LED verte pour indiquer réglage
+    PORTK &= ~(1 << led_verte);// Ã‰teindre LED verte pour indiquer rÃ©glage
 	
     while(1)
     {
-		// Quitter le mode réglage si bouton OK maintenu
+		// Quitter le mode rÃ©glage si bouton OK maintenu
         if(btn_ok) {
             btn_ok = 0;
             _delay_ms(1000);
@@ -186,7 +182,7 @@ void reglage_alarme(void)
                 return;
             }
         }
-		// Bascule entre température et humidité
+		// Bascule entre tempÃ©rature et humiditÃ©
         if(btn_temp_hum) {
             btn_temp_hum = 0;
             type_selection = !type_selection;
@@ -197,14 +193,14 @@ void reglage_alarme(void)
             btn_up = 0;
             _delay_ms(1000);
             if(!(PIND & (1 << BTN_UP))) {
-                seuil_selection = 0;// Sélectionner seuil haut
+                seuil_selection = 0;// SÃ©lectionner seuil haut
             } else {
                 if(type_selection == 0) {
-					// Température
+					// TempÃ©rature
                     if(seuil_selection == 0 && temp_sup < 50) temp_sup++;
                     else if(seuil_selection == 1 && temp_inf < temp_sup) temp_inf++;
                 } else {
-					// Humidité
+					// HumiditÃ©
                     if(seuil_selection == 0 && hum_sup <= 90) hum_sup += 10;
                     else if(seuil_selection == 1 && hum_inf <= hum_sup) hum_inf += 10;
                 }
@@ -216,7 +212,7 @@ void reglage_alarme(void)
             btn_down = 0;
             _delay_ms(1000);
             if(!(PIND & (1 << BTN_DOWN))) {
-                seuil_selection = 1;// Sélectionner seuil bas
+                seuil_selection = 1;// SÃ©lectionner seuil bas
             } else {
                 if(type_selection == 0) {
                     if(seuil_selection == 0 && temp_sup > temp_inf) temp_sup--;
@@ -257,7 +253,7 @@ void alarme(void)
 {
     uint8_t compteur_temp = 0;
 	
-	// Vérification si la température est hors seuil pendant 3 mesures consécutives
+	// VÃ©rification si la tempÃ©rature est hors seuil pendant 3 mesures consÃ©cutives
     for (uint8_t i = 0; i < 3; i++) {
         lire_dht11(&temp_actuelle, &hum_actuelle);
         if (temp_actuelle > temp_sup || temp_actuelle < temp_inf)
@@ -265,7 +261,7 @@ void alarme(void)
         _delay_ms(200);
     }
 
-	// Si température anormale confirmée
+	// Si tempÃ©rature anormale confirmÃ©e
     if (compteur_temp >= 3) {
         PORTK &= ~(1 << led_verte);
         while (1) {
@@ -286,7 +282,7 @@ void alarme(void)
         PORTK |= (1 << led_verte);
     }
 
-	// Vérification humidité
+	// VÃ©rification humiditÃ©
     uint8_t compteur_hum = 0;
     for (uint8_t i = 0; i < 3; i++) {
         lire_dht11(&temp_actuelle, &hum_actuelle);
@@ -327,7 +323,7 @@ int main(void)
     {
 		mesure_temp_hum();
 		
-		// Entrée en mode réglage si combinaison de boutons détectée
+		// EntrÃ©e en mode rÃ©glage si combinaison de boutons dÃ©tectÃ©e
         if((btn_up && btn_down) || btn_temp_hum) {
             btn_up = 0;
             btn_down = 0;
@@ -335,10 +331,10 @@ int main(void)
             mode_reglage = 1;
         }
 
-		// Mode réglage actif
+		// Mode rÃ©glage actif
         if(mode_reglage) {
 	        reglage_alarme();
-			// Lancement alarme si seuil dépassé après réglage
+			// Lancement alarme si seuil dÃ©passÃ© aprÃ¨s rÃ©glage
 	         if(hum_actuelle > hum_sup || hum_actuelle < hum_inf || temp_actuelle >= temp_sup || temp_actuelle <= temp_inf ) {
 	        alarme();
 			 }
@@ -347,3 +343,4 @@ int main(void)
         _delay_ms(1000);
     }
 }
+
